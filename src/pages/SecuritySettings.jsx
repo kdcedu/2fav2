@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Card,
@@ -17,7 +17,10 @@ import {
   Drawer,
   IconButton,
   Collapse,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
 import {
   Security as SecurityIcon,
   PhoneAndroid as PhoneIcon,
@@ -36,6 +39,9 @@ const SecuritySettings = () => {
   const navigate = useNavigate();
   const { user, is2FAEnabled, logout } = useAuth();
   const [showInstructions, setShowInstructions] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   if (!user) {
     navigate('/login');
@@ -49,10 +55,39 @@ const SecuritySettings = () => {
     { icon: <AccountIcon />, text: vi.personalInfo },
   ];
 
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
   return (
     <Box sx={{ display: 'flex' }}>
+      <IconButton
+        color="inherit"
+        aria-label="open drawer"
+        edge="start"
+        onClick={handleDrawerToggle}
+        sx={{
+          mr: 2,
+          display: { sm: 'none' },
+          position: 'fixed',
+          left: mobileOpen ? drawerWidth : 0,
+          top: 10,
+          zIndex: 1300,
+          bgcolor: 'background.paper',
+          '&:hover': {
+            bgcolor: 'action.hover',
+          },
+        }}
+      >
+        <MenuIcon />
+      </IconButton>
       <Drawer
-        variant="permanent"
+        variant={isMobile ? 'temporary' : 'permanent'}
+        open={isMobile ? mobileOpen : true}
+        onClose={handleDrawerToggle}
+        ModalProps={{
+          keepMounted: true, // Better open performance on mobile.
+        }}
         sx={{
           width: drawerWidth,
           flexShrink: 0,
@@ -103,7 +138,7 @@ const SecuritySettings = () => {
         </List>
       </Drawer>
 
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+      <Box component="main" sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}>
         <Paper elevation={0} sx={{ p: 3, mb: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
             <SecurityIcon color="primary" sx={{ mr: 2 }} />
